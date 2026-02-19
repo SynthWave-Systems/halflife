@@ -2163,17 +2163,18 @@ LINK_ENTITY_TO_CLASS( env_beverage, CEnvBeverage );
 
 void CEnvBeverage::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
 {
-	if ( pev->frags != 0 || pev->health <= 0 )
+	// If a can is already waiting, don't spawn another yet.
+	if ( pev->frags != 0 )
 	{
-		// no more cans while one is waiting in the dispenser, or if I'm out of cans.
 		return;
 	}
 
-	CBaseEntity *pCan = CBaseEntity::Create( "item_sodacan", pev->origin, pev->angles, edict() );	
+	// Create a soda can entity at the dispenser origin.
+	CBaseEntity *pCan = CBaseEntity::Create( "item_sodacan", pev->origin, pev->angles, edict() );
 
 	if ( pev->skin == 6 )
 	{
-		// random
+		// random skin
 		pCan->pev->skin = RANDOM_LONG( 0, 5 );
 	}
 	else
@@ -2181,8 +2182,9 @@ void CEnvBeverage::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 		pCan->pev->skin = pev->skin;
 	}
 
+	// Mark that a can is present. Do NOT decrement pev->health so the machine
+	// effectively has unlimited cans.
 	pev->frags = 1;
-	pev->health--;
 
 	//SetThink (SUB_Remove);
 	//pev->nextthink = gpGlobals->time;
